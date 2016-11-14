@@ -18,16 +18,19 @@ public class Driver {
 	 * 
 	 * Validate the user's information and access permissions
 	 */
-	protected boolean validate(int id, String userType) {
+	protected int validate(int id, String userType) {
 		//TODO @hassam check for presence in DB of the specified user type
 		if(id == 1 && userType.equals("pollingOfficial")){
-			return true;
+			return 1;
 		}
 		else if(id == 2 && userType.equals("voter")){
-			return true;
+			return 1;
+		}
+		else if(id == 3 && userType.equals("voter")){
+			return 0;
 		}
 		else{
-			return false;
+			return -1;
 		}
 	}
 
@@ -108,7 +111,7 @@ public class Driver {
 				if(userType.equals("P")){
 					System.out.println("Please enter your id: ");
 					Integer id = Integer.valueOf(reader.readLine());
-					if(driver.validate(id, "pollingOfficial")){
+					if(driver.validate(id, "pollingOfficial") == 1){
 						PollingOfficial po = driver.createPollingOfficial(id);
 						System.out.println("SUCCESS: Welcome polling official. The current results of the election are displayed below: ");
 						System.out.println(po.getResults());
@@ -120,11 +123,12 @@ public class Driver {
 						continue;
 					}
 				}
-				else if(userType.equals("V") && driver.voterSignInCount > 0){
+				else if(userType.equals("V") && driver.voterSignInCount > 1){
 					System.out.println("Please enter your id: ");
 					driver.voterSignInCount--;
+					System.out.println("VOTER SIGN IN COUNT" + driver.voterSignInCount);
 					Integer id = Integer.valueOf(reader.readLine());
-					if(driver.validate(id, "voter")){
+					if(driver.validate(id, "voter") == 1){
 						Voter voter = driver.createVoter(id);
 						if(voter.verifyPersonalInfo()){
 							while(true){
@@ -142,10 +146,15 @@ public class Driver {
 							}
 						}
 						else{
-							System.out.printf("Since the ID did not match your infromation, you will have to start over you have %n more attempts to enter your id correctly", driver.voterSignInCount);
+							System.out.printf("Since the ID did not match your information, you will have to start over you have %d more attempts to enter your id correctly\n", driver.voterSignInCount);
 						}
 						
-						
+					}
+					else if(driver.validate(id, "voter") == -1){
+						System.out.printf("The ID entered did not match that of a valid voter, you will have to start over you have %d more attempts to enter your id correctly\n", driver.voterSignInCount);
+					}
+					else if(driver.validate(id, "voter") == 0){
+						System.out.printf("The ID entered matched a voter who has already voted. Please enter a different ID. You have %d more chances. IF YOU HAVE ALREADY VOTED, PLEASE LEAVE THE POLLING BOOTH. YOU MAY NOT VOTE AGAIN.", driver.voterSignInCount);
 					}
 					
 				}
@@ -153,7 +162,7 @@ public class Driver {
 					System.out.println("You have entered your id incorrectly too many times\nYour device wil now emit a noise to notify a polling official");
 					while(true){
 						System.out.println("Polling official id: ");
-						if(driver.validate(Integer.valueOf(reader.readLine()), "pollingOfficial")){
+						if(driver.validate(Integer.valueOf(reader.readLine()), "pollingOfficial") == 1){
 							System.out.println("The poling official will now enter the voter's id for them per the rules of the voting system");
 							driver.voterSignInCount = 3;
 							break;
