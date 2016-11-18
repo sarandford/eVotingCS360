@@ -13,7 +13,7 @@ import eVoting.DatabaseAccess;
 
 public class Driver {
 
-	private final int ALLOWEDSIGNINATTEMPTS = 3;
+	private static final int ALLOWEDSIGNINATTEMPTS = 3;
 
 	
 	private int signInCounter = 0;
