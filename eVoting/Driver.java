@@ -155,7 +155,7 @@ public class Driver {
 						}
 					}
 
-					else if(userType.equalsIgnoreCase("V") && driver.signInCounter < 3){
+					else if(userType.equalsIgnoreCase("V") && driver.signInCounter < ALLOWEDSIGNINATTEMPTS){
 						System.out.println("Please enter your id:\n");
 						String id = reader.readLine();
 
@@ -223,14 +223,14 @@ public class Driver {
 
 					}
 
-					else if(userType.equalsIgnoreCase("V") && driver.signInCounter >= 3){
+					else if(userType.equalsIgnoreCase("V") && driver.signInCounter >= ALLOWEDSIGNINATTEMPTS){
 						System.out.println("You have entered your id incorrectly too many times\nYour device wil now emit a noise to notify a polling official\n");
 						while(true){
 							System.out.println("Polling official id:\n");
 
 							if(driver.validate(reader.readLine(), "P") == 0){
 								System.out.println("The poling official will now enter the voter's id for them per the rules of the voting system");
-								driver.attemptsLeft = 3;
+								driver.attemptsLeft = ALLOWEDSIGNINATTEMPTS;
 								driver.signInCounter = 0;
 								break;
 							}
