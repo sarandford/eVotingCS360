@@ -2,10 +2,9 @@ package eVoting;
 
 public class User {
 
-	private int id = 0000000000;
-	private String type;
+	private String id = "0000000000";
 
-	protected int getId() {
+	protected String getId() {
 		return this.id;
 	}
 
@@ -15,25 +14,9 @@ public class User {
 	 * 
 	 * Set the current user id number
 	 */
-	protected void setId(int id) {
+	protected void setId(String id) {
 		this.id = id;
 	}
 
-	/**
-	 * Get type of user 
-	 */
-	public String getType() {
-		return this.type;
-	}
-
-	/**
-	 * 
-	 * @param type
-	 * 
-	 * Set the type of user accessing the system
-	 */
-	public void setType(String type) {
-		this.type = type;
-	}
 
 }

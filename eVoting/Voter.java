@@ -14,19 +14,10 @@ public class Voter extends User {
 	/**
 	 * Constructor method
 	 */
-	Voter(String bday, String name) {
+	Voter(String bday, String name,String id) {
 		this.birthdate = bday;
 		this.name = name;
-	}
-
-	/**
-	 * 
-	 * @param newChoice
-	 * 
-	 * Set the candidate choice 
-	 */
-	void setChoice(String newChoice) { // ok why is this here? This chould be a vote object responsibility
-		// TODO - implement Voter.setChoice
+		super.setId(id);
 	}
 
 	/**
@@ -38,10 +29,10 @@ public class Voter extends User {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		try {
 			String input = reader.readLine();
-			if(input.equals("Y")){
+			if(input.equalsIgnoreCase("Y")){
 				return true;
 			}
-			else if(input.equals("N")){
+			else if(input.equalsIgnoreCase("N")){
 				return false;
 			}
 			else{
@@ -57,11 +48,12 @@ public class Voter extends User {
 	 * Get the vote object containing the user's selections. 
 	 */
 	String getVote() {
-		return this.vote.getChoice();
+		return this.vote.getChoice(); 
 	}
 	
 	void setVote(String choice){
-		this.vote = new Vote(choice);
+		this.vote = new Vote(choice, super.getId());
 	}
+	
 
 }
