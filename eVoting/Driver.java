@@ -17,7 +17,7 @@ public class Driver {
 
 	
 	private int signInCounter = 0;
-	private int attemptsLeft = this.ALLOWEDSIGNINATTEMPTS;
+	private int attemptsLeft = Driver.ALLOWEDSIGNINATTEMPTS;
 	private DatabaseAccess db = new DatabaseAccess(); 
 	private Connection conn; 
 
