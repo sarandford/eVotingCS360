@@ -19,6 +19,14 @@ public class Voter extends User {
 		this.name = name;
 		super.setId(id);
 	}
+	
+	String getBirthdate(){
+		return this.birthdate;
+	}
+	
+	String getName(){
+		return this.name;
+	}
 
 	/**
 	 * Confirm personal information displayed on screen
