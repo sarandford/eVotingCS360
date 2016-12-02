@@ -30,7 +30,6 @@ public class mainScreen extends JFrame {
 	private JPanel title;
 	private JLabel titleLabel;
 	private JPanel body;
-	private JPanel submitButton;
 	
 
 	/**
@@ -81,27 +80,39 @@ public class mainScreen extends JFrame {
 		boolean statusHasVoted = false;
 		JLabel returnLabel = new JLabel();
 		JButton confirmVoterInfoButton = new JButton();
+		JLabel voterSignInAttempts = new JLabel("Voter Sign In Attempts(No more than 3 allowed): "+ driver.signInCounter);
+		body.add(voterSignInAttempts);
 		signInButtonforVoterAndPollingOfficial.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("HERE I AM IN THE action");
-				// TODO add validate input checks
-				if (driver.signInCounter < 3) {
-					int result = driver.validate(idTextField.getText(), "V");
-					if (result == 1) {//voter has voted
-						returnLabel.setText("This id is associated with a voter who has already voted");
-						System.out.println("VOTER HAS VOTED");
-						driver.signInCounter--;
-						
-					} else if (result == 0) {//voter has not voted and is valid
-						returnLabel.setText("VOTER INFO HERE");//TODO get voter info
-						returnLabel.setText(driver.getVoterInfo(idTextField.getText()));
-					} else {
-						System.out.println("NOT A VALID VOTER");
-						driver.signInCounter--;
+				if(voterRadioButton.isSelected()){
+					driver.signInCounter++;
+					voterSignInAttempts.setText("Voter Sign In Attempts(No more than 3 allowed): "+ driver.signInCounter);
+					// TODO add validate input checks
+					if (driver.signInCounter < 3) {
+						int result = driver.validate(idTextField.getText(), "V");
+						if (result == 1) {//voter has voted
+							returnLabel.setText("This id is associated with a voter who has already voted.");
+							idTextField.setText("");
+						} else if(result == 2){
+							returnLabel.setText("This ID does not match that of a valid voter");
+							idTextField.setText("");
+						}
+						else if (result == 0) {//voter has not voted and is valid
+							returnLabel.setText(driver.getVoterInfo(idTextField.getText()));
+							JButton voterVerifiedInformation = new JButton("This is me");
+							JButton voterFailstoVerifyInformation = new JButton("This is NOT me");
+							body.add(voterVerifiedInformation);
+							body.add(voterFailstoVerifyInformation);
+							//TODO voter proceeds, voter does not proceed
+						} 
+					}
+					else{
+						//TODO Alert official
+						System.out.println("in the else for action");
 					}
 				}
 				else{
-					System.out.println("in the else for action");
+					
 				}
 			}
 		});
