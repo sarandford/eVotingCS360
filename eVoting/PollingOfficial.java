@@ -12,10 +12,9 @@ public class PollingOfficial extends User {
 	/**
 	 * Print the current tally of submitted votes on the machine
 	 */
-	void printResults(Hashtable<String,Integer> results) {
+	String printResults(Hashtable<String,Integer> results) {
 
-		System.out.println("Current Tally:\n" + this.getResults(results) + "\n");
-		System.out.println("Total Votes = " + this.getTotalVotes(results));
+		return ("Current Tally:\n" + this.getResults(results) + "\nTotal Votes = " + this.getTotalVotes(results));
 	}
 
 	/**
@@ -51,10 +50,10 @@ public class PollingOfficial extends User {
 				break;
 			}
 
-			rtn = rtn + candidateName +",";
+			rtn = rtn + candidateName +": ";
 			rtn = rtn + results.get(currentKey);
 
-			if(keys.hasMoreElements()) rtn = rtn +",";
+			if(keys.hasMoreElements()) rtn = rtn +"\n";
 
 		}
 		return rtn; 

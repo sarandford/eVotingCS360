@@ -126,11 +126,37 @@ public class Driver {
 		return this.conn; 
 	}
 	
-	Hashtable<String, Integer> getTally() throws SQLException{//TODO consider whether or not we should throw or handle
-		return this.db.getTally(this.conn);
+	String getTally(){
+		try{
+			PollingOfficial po = new PollingOfficial(); 
+
+			return po.printResults(db.getTally(conn));
+		}
+		catch(SQLException e){
+			System.out.println("An error has occurred: "+ e);
+		}
+		return null;
 	}
 
-//	public static void main(String[] args){
+	
+	
+	
+	/**
+	 * Post the vote to the database 
+	 * @name boolean postVote(String candidateID)
+	 * @param candidateID
+	 * @return boolean (True if posted successfully)
+	 * 
+	 * - use postVote(Connection conn, String voterId, String voterChoice) method in DBAcess class 
+	 * - voterChoice param is passed into this method
+	 * - voterId param must be passed in from somewhere 
+	 * 
+	 */
+	
+
+	
+	
+	//	public static void main(String[] args){
 //
 //		try {
 //			while(true){
