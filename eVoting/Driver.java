@@ -22,7 +22,7 @@ public class Driver {
 	public Driver(){
 		Connection conn;
 		final String user = "root";
-		final String password = ""; 
+		final String password = "samtom1"; 
 		final String serverName = "localhost";
 		final String port = "3306";
 		final String dbname = "eVoting";
@@ -138,7 +138,25 @@ public class Driver {
 		return null;
 	}
 
-//	public static void main(String[] args){
+	
+	
+	
+	/**
+	 * Post the vote to the database 
+	 * @name boolean postVote(String candidateID)
+	 * @param candidateID
+	 * @return boolean (True if posted successfully)
+	 * 
+	 * - use postVote(Connection conn, String voterId, String voterChoice) method in DBAcess class 
+	 * - voterChoice param is passed into this method
+	 * - voterId param must be passed in from somewhere 
+	 * 
+	 */
+	
+
+	
+	
+	//	public static void main(String[] args){
 //
 //		try {
 //			while(true){
