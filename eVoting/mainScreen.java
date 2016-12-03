@@ -13,13 +13,20 @@ import javax.swing.JRadioButton;
 import java.awt.FlowLayout;
 import javax.swing.SwingConstants;
 import java.awt.CardLayout;
+import java.awt.Color;
+
 import javax.swing.JInternalFrame;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
+
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Properties;
 import java.awt.event.ActionEvent;
 
@@ -52,6 +59,7 @@ public class mainScreen extends JFrame {
 		});
 	}
 	public void transitionScreens(){
+		// CITATION: this code informed from reading on https://coderanch.com/t/340488/java/Adding-removing-components-JPanel 
 		body.removeAll();
 		body.revalidate();
 		body.repaint();
@@ -81,17 +89,18 @@ public class mainScreen extends JFrame {
 		roleRadioButtons.add(pollingOfficialRadioButton);
 		body.add(voterRadioButton);
 		body.add(pollingOfficialRadioButton);
-
-		idTextField = new JTextField("id");
+		
+		JTextField idTextField = new JTextField("ID");
+		idTextField.setColumns(20);
 		body.add(idTextField);
-		idTextField.setColumns(10);
-
+		
 		JButton signInButtonforVoterAndPollingOfficial = new JButton("Sign In");
-		JLabel returnLabel = new JLabel();
+		JTextPane returnText = new JTextPane();
 		
 		signInButtonforVoterAndPollingOfficial.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String id = idTextField.getText().trim();
+				if(id.length() == 5 || id.length() == 13 ){
 				if(voterRadioButton.isSelected()){
 					driver.signInCounter++;
 					JLabel voterSignInAttempts = new JLabel("Voter Sign In Attempts(No more than 3 allowed): "+ driver.signInCounter);
@@ -100,14 +109,14 @@ public class mainScreen extends JFrame {
 					if (driver.signInCounter < 3) {
 						int result = driver.validate(id, "V");
 						if (result == 1) {//voter has voted
-							returnLabel.setText("This id is associated with a voter who has already voted.");
+							returnText.setText("ERROR: This id is associated with a voter who has already voted.");
 							idTextField.setText("");
 						} else if(result == 2){
-							returnLabel.setText("This ID does not match that of a valid voter");
+							returnText.setText("ERROR: This ID does not match that of a valid voter");
 							idTextField.setText("");
 						}
 						else if (result == 0) {//voter has not voted and is valid
-							returnLabel.setText(driver.getVoterInfo(id));
+							returnText.setText(driver.getVoterInfo(id));
 							JButton voterVerifiedInformation = new JButton("This is me");
 							JButton voterFailstoVerifyInformation = new JButton("This is NOT me");
 							body.add(voterVerifiedInformation);
@@ -124,7 +133,6 @@ public class mainScreen extends JFrame {
 					if(pollingOfficialRadioButton.isSelected()){
 						int result = driver.validate(id, "P");
 						if(result == 0){
-							System.out.println("VALID POLLING OFFICIAL");
 							transitionScreens();
 							createPollingOfficialScreen();
 						
@@ -137,9 +145,12 @@ public class mainScreen extends JFrame {
 					
 				}
 			}
-		});
+				else{
+					returnText.setText("ERROR: The input is not in a valid format.\n Ensure you have entered your id correctly and try again");
+				}
+		}});
 		body.add(signInButtonforVoterAndPollingOfficial);
-		body.add(returnLabel);
+		body.add(returnText);
 		
 	}
 	/**
@@ -158,7 +169,7 @@ public class mainScreen extends JFrame {
 		this.titleLabel = new JLabel();
 		this.body = new JPanel();
 		contentPane.add(body, BorderLayout.CENTER);
-		body.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));//TODO only allow one radio button to be selected and select voter by default
+		body.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 	}
 	
 
