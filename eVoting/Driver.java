@@ -126,8 +126,16 @@ public class Driver {
 		return this.conn; 
 	}
 	
-	Hashtable<String, Integer> getTally() throws SQLException{//TODO consider whether or not we should throw or handle
-		return this.db.getTally(this.conn);
+	String getTally(){
+		try{
+			PollingOfficial po = new PollingOfficial(); 
+
+			return po.printResults(db.getTally(conn));
+		}
+		catch(SQLException e){
+			System.out.println("An error has occurred: "+ e);
+		}
+		return null;
 	}
 
 //	public static void main(String[] args){

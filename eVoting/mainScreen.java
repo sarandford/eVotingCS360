@@ -8,15 +8,18 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JRadioButton;
 import java.awt.FlowLayout;
 import javax.swing.SwingConstants;
 import java.awt.CardLayout;
 import javax.swing.JInternalFrame;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 import java.awt.event.ActionEvent;
 
@@ -49,27 +52,34 @@ public class mainScreen extends JFrame {
 		});
 	}
 	public void transitionScreens(){
-		title.removeAll();
 		body.removeAll();
+		body.revalidate();
+		body.repaint();
 	}
 	
 	public void createVoterSelectionScreen(){
 		
+		//TODO add print method
 	}
 	
-	public void createPollingOfficialSelectionScreen(){
-		
+	public void createPollingOfficialScreen(){
+		titleLabel.setText("HIGHLY CONFIDENTIAL: Results of 2016 Election for South Carolina");
+		JTextPane results = new JTextPane();
+		results.setText(driver.getTally());	
+		body.add(results);
+		//TODO add print method
 	}
 	
 	public void createSignInScreen(){
 		titleLabel.setText("Welcome to the eVoting System for the State of South Carolina");
 		title.add(titleLabel);
+		ButtonGroup roleRadioButtons = new ButtonGroup();
 		JRadioButton voterRadioButton = new JRadioButton("I am a voter");
 		voterRadioButton.setSelected(true);
-		body.add(voterRadioButton);
-		voterRadioButton.setVerticalAlignment(SwingConstants.BOTTOM);
-
 		JRadioButton pollingOfficialRadioButton = new JRadioButton("I am a polling official");
+		roleRadioButtons.add(voterRadioButton);
+		roleRadioButtons.add(pollingOfficialRadioButton);
+		body.add(voterRadioButton);
 		body.add(pollingOfficialRadioButton);
 
 		idTextField = new JTextField("id");
@@ -77,19 +87,18 @@ public class mainScreen extends JFrame {
 		idTextField.setColumns(10);
 
 		JButton signInButtonforVoterAndPollingOfficial = new JButton("Sign In");
-		boolean statusHasVoted = false;
 		JLabel returnLabel = new JLabel();
-		JButton confirmVoterInfoButton = new JButton();
-		JLabel voterSignInAttempts = new JLabel("Voter Sign In Attempts(No more than 3 allowed): "+ driver.signInCounter);
-		body.add(voterSignInAttempts);
+		
 		signInButtonforVoterAndPollingOfficial.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				String id = idTextField.getText().trim();
 				if(voterRadioButton.isSelected()){
 					driver.signInCounter++;
-					voterSignInAttempts.setText("Voter Sign In Attempts(No more than 3 allowed): "+ driver.signInCounter);
+					JLabel voterSignInAttempts = new JLabel("Voter Sign In Attempts(No more than 3 allowed): "+ driver.signInCounter);
+					body.add(voterSignInAttempts);
 					// TODO add validate input checks
 					if (driver.signInCounter < 3) {
-						int result = driver.validate(idTextField.getText(), "V");
+						int result = driver.validate(id, "V");
 						if (result == 1) {//voter has voted
 							returnLabel.setText("This id is associated with a voter who has already voted.");
 							idTextField.setText("");
@@ -98,7 +107,7 @@ public class mainScreen extends JFrame {
 							idTextField.setText("");
 						}
 						else if (result == 0) {//voter has not voted and is valid
-							returnLabel.setText(driver.getVoterInfo(idTextField.getText()));
+							returnLabel.setText(driver.getVoterInfo(id));
 							JButton voterVerifiedInformation = new JButton("This is me");
 							JButton voterFailstoVerifyInformation = new JButton("This is NOT me");
 							body.add(voterVerifiedInformation);
@@ -112,6 +121,19 @@ public class mainScreen extends JFrame {
 					}
 				}
 				else{
+					if(pollingOfficialRadioButton.isSelected()){
+						int result = driver.validate(id, "P");
+						if(result == 0){
+							System.out.println("VALID POLLING OFFICIAL");
+							transitionScreens();
+							createPollingOfficialScreen();
+						
+						}
+						else{
+							
+							System.out.println("RESULT IS: " + result);
+						}
+					}
 					
 				}
 			}
