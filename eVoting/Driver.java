@@ -22,7 +22,7 @@ public class Driver {
 	public Driver(){
 		Connection conn;
 		final String user = "root";
-		final String password = ""; 
+		final String password = "samtom1"; 
 		final String serverName = "localhost";
 		final String port = "3306";
 		final String dbname = "eVoting";

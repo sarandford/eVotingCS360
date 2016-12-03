@@ -43,6 +43,7 @@ public class mainScreen extends JFrame {
 					mainScreen frame = new mainScreen();
 					frame.setVisible(true);
 					frame.createSignInScreen();
+					System.out.print(frame.getBounds().getMinY());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -55,6 +56,10 @@ public class mainScreen extends JFrame {
 	}
 	
 	public void createVoterSelectionScreen(){
+		//This is a JPanel of the candidates.
+		//panel encapsulates both the candidates
+		//and the confirmation for the vote
+		CandidateChoiceScreen candidateScreen = new CandidateChoiceScreen(this); 
 		
 	}
 	
@@ -81,6 +86,7 @@ public class mainScreen extends JFrame {
 		boolean statusHasVoted = false;
 		JLabel returnLabel = new JLabel();
 		JButton confirmVoterInfoButton = new JButton();
+		
 		signInButtonforVoterAndPollingOfficial.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("HERE I AM IN THE action");
