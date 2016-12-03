@@ -11,23 +11,10 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JRadioButton;
 import java.awt.FlowLayout;
-import javax.swing.SwingConstants;
-import java.awt.CardLayout;
-import java.awt.Color;
-
-import javax.swing.JInternalFrame;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JFormattedTextField;
-
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Locale;
-import java.util.Properties;
+import java.awt.print.PrinterException;
 import java.awt.event.ActionEvent;
 
 import eVoting.Driver;
@@ -35,7 +22,6 @@ import eVoting.Driver;
 public class mainScreen extends JFrame {
 
 	private JPanel contentPane;
-	private JTextField idTextField;
 	private Driver driver;
 	private JPanel title;
 	private JLabel titleLabel;
@@ -47,6 +33,7 @@ public class mainScreen extends JFrame {
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					mainScreen frame = new mainScreen();
@@ -70,13 +57,56 @@ public class mainScreen extends JFrame {
 		//TODO add print method
 	}
 	
+	public void createPollingOfficialAlertedScreen(){
+		titleLabel.setText("Invalid ID has been entered too many times");
+		JTextField pollingOfficialIdField = new JTextField();
+		pollingOfficialIdField.setColumns(20);
+		pollingOfficialIdField.setText("Enter polling official id");
+		JButton submitIdButton = new JButton("Sign In");
+		body.add(pollingOfficialIdField);
+		body.add(submitIdButton);
+		JTextPane signInFailure = new JTextPane();
+		submitIdButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String result = pollingOfficialIdField.getText().trim();
+				if(driver.validate(result, "P") == 0){
+					driver.signInCounter = 0;
+					transitionScreens();
+					createSignInScreen();
+				}
+				else{
+					signInFailure.setText("This ID does not match that of a valid polling official.\nPlease try again");
+					pollingOfficialIdField.setText("");
+				}
+			}});
+		body.add(signInFailure);
+		
+	}
+	
 	public void createPollingOfficialScreen(){
 		titleLabel.setText("HIGHLY CONFIDENTIAL: Results of 2016 Election for South Carolina");
 		JTextPane results = new JTextPane();
 		results.setText(driver.getTally());	
+		JButton print = new JButton("print");
 		body.add(results);
-		//TODO add print method
-	}
+		body.add(print);
+
+		print.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					results.print();
+					transitionScreens();
+					driver.signInCounter = 0;//the voter count should not have changed but we reset it to ensure it is 0 again
+					createSignInScreen();
+				} catch (PrinterException printException) {
+					// TODO Auto-generated catch block
+					printException.printStackTrace();
+				}
+				}
+			});
+		}
 	
 	public void createSignInScreen(){
 		titleLabel.setText("Welcome to the eVoting System for the State of South Carolina");
@@ -96,41 +126,49 @@ public class mainScreen extends JFrame {
 		
 		JButton signInButtonforVoterAndPollingOfficial = new JButton("Sign In");
 		JTextPane returnText = new JTextPane();
-		
+		JLabel voterSignInAttempts = new JLabel("Voter Sign In Attempts(No more than 3 allowed): "+ driver.signInCounter);
+		body.add(voterSignInAttempts);
+
 		signInButtonforVoterAndPollingOfficial.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				String id = idTextField.getText().trim();
-				if(id.length() == 5 || id.length() == 13 ){
 				if(voterRadioButton.isSelected()){
 					driver.signInCounter++;
-					JLabel voterSignInAttempts = new JLabel("Voter Sign In Attempts(No more than 3 allowed): "+ driver.signInCounter);
-					body.add(voterSignInAttempts);
-					// TODO add validate input checks
+					voterSignInAttempts.setText("Voter Sign In Attempts(No more than 3 allowed): "+ driver.signInCounter);
 					if (driver.signInCounter < 3) {
-						int result = driver.validate(id, "V");
-						if (result == 1) {//voter has voted
-							returnText.setText("ERROR: This id is associated with a voter who has already voted.");
-							idTextField.setText("");
-						} else if(result == 2){
-							returnText.setText("ERROR: This ID does not match that of a valid voter");
-							idTextField.setText("");
+						if(id.length() == 13){
+							int result = driver.validate(id, "V");
+							if (result == 1) {//voter has voted
+								returnText.setText("ERROR: This id is associated with a voter who has already voted.");
+								idTextField.setText("");
+							} else if(result == 2){
+								returnText.setText("ERROR: This ID does not match that of a valid voter");
+								idTextField.setText("");
+							}
+							else if (result == 0) {//voter has not voted and is valid
+								returnText.setText(driver.getVoterInfo(id));
+								JButton voterVerifiedInformation = new JButton("This is me");
+								JButton voterFailstoVerifyInformation = new JButton("This is NOT me");
+								body.add(voterVerifiedInformation);
+								body.add(voterFailstoVerifyInformation);
+								//TODO voter proceeds, voter does not proceed
+							} 
 						}
-						else if (result == 0) {//voter has not voted and is valid
-							returnText.setText(driver.getVoterInfo(id));
-							JButton voterVerifiedInformation = new JButton("This is me");
-							JButton voterFailstoVerifyInformation = new JButton("This is NOT me");
-							body.add(voterVerifiedInformation);
-							body.add(voterFailstoVerifyInformation);
-							//TODO voter proceeds, voter does not proceed
-						} 
+						else{
+							returnText.setText("ERROR: Invalid id format");
+						}
 					}
 					else{
 						//TODO Alert official
-						System.out.println("in the else for action");
+						java.awt.Toolkit.getDefaultToolkit().beep(); //found from http://stackoverflow.com/questions/10771441/java-equivalent-of-c-sharp-system-beep 
+						transitionScreens();
+						createPollingOfficialAlertedScreen();
+						
 					}
 				}
-				else{
-					if(pollingOfficialRadioButton.isSelected()){
+				else if(pollingOfficialRadioButton.isSelected()){
+					if(id.length() == 5){
 						int result = driver.validate(id, "P");
 						if(result == 0){
 							transitionScreens();
@@ -138,17 +176,17 @@ public class mainScreen extends JFrame {
 						
 						}
 						else{
-							
-							System.out.println("RESULT IS: " + result);
+							returnText.setText("This id does not match that of a valid polling official");
 						}
 					}
-					
+					else{
+						returnText.setText("ERROR: Invalid ID format. Please try again");
+					}
+					idTextField.setText("");
 				}
 			}
-				else{
-					returnText.setText("ERROR: The input is not in a valid format.\n Ensure you have entered your id correctly and try again");
-				}
-		}});
+			
+		});
 		body.add(signInButtonforVoterAndPollingOfficial);
 		body.add(returnText);
 		
