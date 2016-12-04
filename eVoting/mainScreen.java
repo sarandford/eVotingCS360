@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.awt.event.ActionEvent;
 
 import eVoting.Driver;
+import java.awt.Font;
 
 public class mainScreen extends JFrame {
 
@@ -63,28 +64,33 @@ public class mainScreen extends JFrame {
 		body.repaint();
 	}
 
-	public void createVoterSelectionScreen() {
+	public void createVoterSelectionScreen(String voterId) {
 		final ButtonGroup buttonGroup = new ButtonGroup();
 
 		titleLabel.setText("Choose a Candidate");
 
 		JRadioButton rdbtnHillaryRClinton = new JRadioButton("Hillary R. Clinton");
+		rdbtnHillaryRClinton.setFont(new Font("Dialog", Font.PLAIN, 35));
 		buttonGroup.add(rdbtnHillaryRClinton);
 		rdbtnHillaryRClinton.setActionCommand("1");
 
 		JRadioButton rdbtnDonaldJTrump = new JRadioButton("Donald J. Trump");
+		rdbtnDonaldJTrump.setFont(new Font("Dialog", Font.PLAIN, 35));
 		buttonGroup.add(rdbtnDonaldJTrump);
 		rdbtnDonaldJTrump.setActionCommand("2");
 
 		JRadioButton rdbtnGaryJohnson = new JRadioButton("Gary Johnson");
+		rdbtnGaryJohnson.setFont(new Font("Dialog", Font.PLAIN, 35));
 		buttonGroup.add(rdbtnGaryJohnson);
 		rdbtnGaryJohnson.setActionCommand("3");
 
 		JRadioButton rdbtnJillStein = new JRadioButton("Jill Stein");
+		rdbtnJillStein.setFont(new Font("Dialog", Font.PLAIN, 35));
 		buttonGroup.add(rdbtnJillStein);
 		rdbtnJillStein.setActionCommand("4");
 
 		JButton btnMakeSelection = new JButton("Make Selection");
+		btnMakeSelection.setFont(new Font("Dialog", Font.PLAIN, 35));
 		btnMakeSelection.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
@@ -95,16 +101,16 @@ public class mainScreen extends JFrame {
 
 					switch (selection) {
 					case "1":
-						createVoteConfirmScreen("Hillary R. Clinton", selection);
+						createVoteConfirmScreen("Hillary R. Clinton", selection, voterId);
 						break;
 					case "2":
-						createVoteConfirmScreen("Donald J. Trump", selection);
+						createVoteConfirmScreen("Donald J. Trump", selection, voterId);
 						break;
 					case "3":
-						createVoteConfirmScreen("Gary Johnson", selection);
+						createVoteConfirmScreen("Gary Johnson", selection, voterId);
 						break;
 					case "4":
-						createVoteConfirmScreen("Jill Stein", selection);
+						createVoteConfirmScreen("Jill Stein", selection ,voterId);
 						break;
 					}
 				} else {
@@ -119,8 +125,6 @@ public class mainScreen extends JFrame {
 		body.add(rdbtnGaryJohnson);
 		body.add(rdbtnJillStein);
 		body.add(btnMakeSelection);
-
-		// TODO add print method
 	}
 
 	public void createPollingOfficialAlertedScreen() {
@@ -128,10 +132,12 @@ public class mainScreen extends JFrame {
 		JTextField pollingOfficialIdField = new JTextField();
 		pollingOfficialIdField.setColumns(20);
 		pollingOfficialIdField.setText("Enter polling official id");
+		pollingOfficialIdField.setFont(new Font("Dialog", Font.PLAIN, 35));
 		JButton submitIdButton = new JButton("Sign In");
 		body.add(pollingOfficialIdField);
 		body.add(submitIdButton);
 		JTextPane signInFailure = new JTextPane();
+		signInFailure.setFont(new Font("Dialog", Font.PLAIN, 35));
 		submitIdButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -151,72 +157,98 @@ public class mainScreen extends JFrame {
 		// TODO add print method
 	}
 
-	public void createVoteConfirmScreen(String candidateName, String candidateID) {
+	public void createVoteConfirmScreen(String candidateName, String candidateID, String voterId) {
 		titleLabel.setText("Confirm Your Choice");
 		final ButtonGroup buttonGroup = new ButtonGroup();
 
-		JLabel lblYourchoicehere = new JLabel("Vote for:\n" + candidateName);
-
-		JButton btnDynamicbutton = new JButton("No Selection");
-		btnDynamicbutton.addActionListener(new ActionListener() {
+		JLabel lblYourChoiceHere = new JLabel("Vote for:\n" + candidateName);
+		lblYourChoiceHere.setFont(new Font("Dialog", Font.PLAIN, 35));
+		JButton btnDynamicButton = new JButton("No Selection");
+		btnDynamicButton.setFont(new Font("Dialog", Font.PLAIN, 35));
+		btnDynamicButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String selection = buttonGroup.getSelection().getActionCommand();
 
 				if (selection.equalsIgnoreCase("submit")) {
 
-					// driver.postVote(candidateID);
+					if( driver.postVote(candidateID, voterId)){
 
-					transitionScreens();
-
-					JLabel confirmSubmission = new JLabel("You voted for: " + candidateName);
-
-					body.add(confirmSubmission);
-
+						transitionScreens();
+	
+						JTextPane confirmSubmission = new JTextPane();
+						confirmSubmission.setText("You voted for: " + candidateName +"\n");
+						confirmSubmission.setFont(new Font("Dialog", Font.PLAIN, 35));
+						JButton printAndExit = new JButton("Print and Exit Booth");
+						printAndExit.setFont(new Font("Dialog", Font.PLAIN, 35));
+						body.add(confirmSubmission);
+						body.add(printAndExit);
+						
+						printAndExit.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) {
+								try {
+									confirmSubmission.print();
+									transitionScreens();
+									driver.signInCounter = 0;
+									createSignInScreen();
+								} catch (PrinterException printException) {
+									printException.printStackTrace();
+								}
+							}
+						});
+					}
+					else{
+						JTextPane error = new JTextPane();
+						error.setText("A database error has occurred. Please notify official. You may vote on paper as an alternative");
+						body.add(error);
+					}
+					
 				} else if (selection.equalsIgnoreCase("change")) {
 					transitionScreens();
-					createVoterSelectionScreen();
+					createVoterSelectionScreen(voterId);
 				}
 
 			}
 		});
 
-		btnDynamicbutton.setEnabled(false);
-
+		btnDynamicButton.setEnabled(false);
 		JRadioButton rdbtnSumbitChoice = new JRadioButton("Sumbit Vote");
+		rdbtnSumbitChoice.setFont(new Font("Dialog", Font.PLAIN, 35));
 		rdbtnSumbitChoice.setActionCommand("submit");
 		rdbtnSumbitChoice.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				btnDynamicbutton.setText("Submit Your Vote");
-				btnDynamicbutton.setEnabled(true);
+				btnDynamicButton.setText("Submit Your Vote");
+				btnDynamicButton.setEnabled(true);
 			}
 		});
 
 		buttonGroup.add(rdbtnSumbitChoice);
 
 		JRadioButton rdbtnChangeChoice = new JRadioButton("Change Choice");
+		rdbtnChangeChoice.setFont(new Font("Dialog", Font.PLAIN, 35));
 		rdbtnChangeChoice.setActionCommand("change");
 		rdbtnChangeChoice.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				btnDynamicbutton.setText("Change Your Vote");
-				btnDynamicbutton.setEnabled(true);
+				btnDynamicButton.setText("Change Your Vote");
+				btnDynamicButton.setEnabled(true);
 			}
 		});
-
 		buttonGroup.add(rdbtnChangeChoice);
 
-		body.add(lblYourchoicehere);
+		body.add(lblYourChoiceHere);
 		body.add(rdbtnSumbitChoice);
 		body.add(rdbtnChangeChoice);
 
-		body.add(btnDynamicbutton);
+		body.add(btnDynamicButton);
 
 	}
 
 	public void createPollingOfficialScreen() {
 		titleLabel.setText("HIGHLY CONFIDENTIAL: Results of 2016 Election for South Carolina");
 		JTextPane results = new JTextPane();
+		results.setFont(new Font("Dialog", Font.PLAIN, 35));
 		results.setText(driver.getTally());
 		JButton print = new JButton("print");
+		print.setFont(new Font("Dialog", Font.PLAIN, 35));
 		body.add(results);
 		body.add(print);
 
@@ -244,20 +276,27 @@ public class mainScreen extends JFrame {
 		ButtonGroup roleRadioButtons = new ButtonGroup();
 		JRadioButton voterRadioButton = new JRadioButton("I am a voter");
 		voterRadioButton.setSelected(true);
+		voterRadioButton.setFont(new Font("Dialog", Font.PLAIN, 35));
 		JRadioButton pollingOfficialRadioButton = new JRadioButton("I am a polling official");
+		pollingOfficialRadioButton.setFont(new Font("Dialog", Font.PLAIN, 35));
 		roleRadioButtons.add(voterRadioButton);
 		roleRadioButtons.add(pollingOfficialRadioButton);
+	
 		body.add(voterRadioButton);
 		body.add(pollingOfficialRadioButton);
 
 		JTextField idTextField = new JTextField("ID");
 		idTextField.setColumns(20);
+		idTextField.setFont(new Font("Dialog", Font.PLAIN, 35));
 		body.add(idTextField);
 
 		JButton signInButtonforVoterAndPollingOfficial = new JButton("Sign In");
+		signInButtonforVoterAndPollingOfficial.setFont(new Font("Dialog", Font.PLAIN, 35));
 		JTextPane returnText = new JTextPane();
+		returnText.setFont(new Font("Dialog", Font.PLAIN, 35));
 		JLabel voterSignInAttempts = new JLabel(
 				"Voter Sign In Attempts(No more than 3 allowed): " + driver.signInCounter);
+		voterSignInAttempts.setFont(new Font("Dialog", Font.PLAIN, 35));
 		body.add(voterSignInAttempts);
 
 		signInButtonforVoterAndPollingOfficial.addActionListener(new ActionListener() {
@@ -280,11 +319,27 @@ public class mainScreen extends JFrame {
 														// is valid
 								returnText.setText(driver.getVoterInfo(id));
 								JButton voterVerifiedInformation = new JButton("This is me");
+								voterVerifiedInformation.setFont(new Font("Dialog", Font.PLAIN, 35));
 								JButton voterFailstoVerifyInformation = new JButton("This is NOT me");
+								voterFailstoVerifyInformation.setFont(new Font("Dialog", Font.PLAIN, 35));
 								body.add(voterVerifiedInformation);
 								body.add(voterFailstoVerifyInformation);
-								// TODO Connect hassam's method to voter does proceed
-								//TODO create handler for if voter chooses not to proceed
+								
+								voterVerifiedInformation.addActionListener(new ActionListener() {
+									public void actionPerformed(ActionEvent e) {
+										transitionScreens();
+										createVoterSelectionScreen(id); //TODO handle post vote
+										}
+									}
+									);
+								voterFailstoVerifyInformation.addActionListener(new ActionListener() {
+									public void actionPerformed(ActionEvent e) {
+											transitionScreens();
+											driver.signInCounter++;
+											createSignInScreen();
+										}
+									}
+									);
 								
 							}
 						} else {
@@ -329,9 +384,11 @@ public class mainScreen extends JFrame {
 	 * Create the frame.
 	 */
 	public mainScreen() {
+		setTitle("South Carolina eVoting System");
+		setFont(new Font("Dialog", Font.PLAIN, 38));
 		this.driver = new Driver();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(600, 600, 2000, 2000);
 		this.contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -339,6 +396,7 @@ public class mainScreen extends JFrame {
 		this.title = new JPanel();
 		contentPane.add(title, BorderLayout.NORTH);
 		this.titleLabel = new JLabel();
+		titleLabel.setFont(new Font("Dialog", Font.PLAIN, 33));
 		this.body = new JPanel();
 		contentPane.add(body, BorderLayout.CENTER);
 		body.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
