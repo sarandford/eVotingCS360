@@ -11,21 +11,17 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JRadioButton;
 import java.awt.FlowLayout;
-import javax.swing.SwingConstants;
-import java.awt.CardLayout;
-import javax.swing.JInternalFrame;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.print.PrinterException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Properties;
 import java.awt.event.ActionEvent;
 
 import eVoting.Driver;
 import java.awt.Font;
+import java.awt.Toolkit;
+import javax.swing.JList;
+import javax.swing.SwingConstants;
 
 public class mainScreen extends JFrame {
 
@@ -88,7 +84,13 @@ public class mainScreen extends JFrame {
 		rdbtnJillStein.setFont(new Font("Dialog", Font.PLAIN, 35));
 		buttonGroup.add(rdbtnJillStein);
 		rdbtnJillStein.setActionCommand("4");
-
+		
+		JRadioButton rdbtnNone = new JRadioButton("None of these");
+		rdbtnNone.setFont(new Font("Dialog", Font.PLAIN, 35));
+		buttonGroup.add(rdbtnNone);
+		rdbtnNone.setActionCommand("5");
+		
+		
 		JButton btnMakeSelection = new JButton("Make Selection");
 		btnMakeSelection.setFont(new Font("Dialog", Font.PLAIN, 35));
 		btnMakeSelection.addActionListener(new ActionListener() {
@@ -112,6 +114,10 @@ public class mainScreen extends JFrame {
 					case "4":
 						createVoteConfirmScreen("Jill Stein", selection ,voterId);
 						break;
+					
+					case "5":
+						createVoteConfirmScreen("None of these", selection, voterId);
+						break;
 					}
 				} else {
 					System.out.println("NO CHOICE MADE!");
@@ -124,7 +130,8 @@ public class mainScreen extends JFrame {
 		body.add(rdbtnDonaldJTrump);
 		body.add(rdbtnGaryJohnson);
 		body.add(rdbtnJillStein);
-		body.add(btnMakeSelection);
+		body.add(rdbtnNone);
+		body.add(btnMakeSelection);		
 	}
 
 	public void createPollingOfficialAlertedScreen() {
@@ -306,7 +313,7 @@ public class mainScreen extends JFrame {
 					driver.signInCounter++;
 					voterSignInAttempts
 							.setText("Voter Sign In Attempts(No more than 3 allowed): " + driver.signInCounter);
-					if (driver.signInCounter < 3) {
+					if (driver.signInCounter <= 3) {
 						if (id.length() == 13) {
 							int result = driver.validate(id, "V");
 							if (result == 1) {// voter has voted
@@ -328,15 +335,19 @@ public class mainScreen extends JFrame {
 								voterVerifiedInformation.addActionListener(new ActionListener() {
 									public void actionPerformed(ActionEvent e) {
 										transitionScreens();
-										createVoterSelectionScreen(id); //TODO handle post vote
+										createVoterSelectionScreen(id);
 										}
 									}
 									);
 								voterFailstoVerifyInformation.addActionListener(new ActionListener() {
 									public void actionPerformed(ActionEvent e) {
 											transitionScreens();
-											driver.signInCounter++;
-											createSignInScreen();
+											if(driver.signInCounter==3){
+												createPollingOfficialAlertedScreen();
+											}
+											else{
+												createSignInScreen();
+											}
 										}
 									}
 									);
@@ -344,11 +355,11 @@ public class mainScreen extends JFrame {
 							}
 						} else {
 							returnText.setText("ERROR: Invalid id format");
+							idTextField.setText("");
 						}
 					} else {
-						// TODO FIX BEEP THING
-						java.awt.Toolkit.getDefaultToolkit().beep(); // found
-																		// from
+						Toolkit.getDefaultToolkit().beep(); // found
+												// from
 						// http://stackoverflow.com/questions/10771441/java-equivalent-of-c-sharp-system-beep
 						transitionScreens();
 						createPollingOfficialAlertedScreen();
@@ -363,6 +374,7 @@ public class mainScreen extends JFrame {
 								transitionScreens();
 								createPollingOfficialScreen();
 							} else {
+								System.out.println("INVALID");
 								returnText.setText("This id does not match that of a valid polling official");
 							}
 						} else {
