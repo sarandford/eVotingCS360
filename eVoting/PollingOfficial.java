@@ -48,6 +48,9 @@ public class PollingOfficial extends User {
 			case "4":
 				candidateName = "Jill Stein"; 
 				break;
+			case "5":
+				candidateName = "No Vote"; 
+				break;
 			}
 
 			rtn = rtn + candidateName +": ";

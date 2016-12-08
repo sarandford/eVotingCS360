@@ -6,11 +6,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.util.Hashtable;
+
 /**
  *
  * @author hassamsolano
  */
-
 
 public class DatabaseAccess {
 
@@ -30,7 +30,6 @@ public class DatabaseAccess {
 			PreparedStatement stmnt = conn.prepareStatement(candidateQuery);
 			
 			return stmnt.executeQuery(); 
-			
 			
 		}catch (SQLException e){
 			System.out.println(e.getMessage());
@@ -52,7 +51,7 @@ public class DatabaseAccess {
 			String VOTERINFOQUERY = "SELECT * FROM voters WHERE voters.voterId = ?";
 			
 			PreparedStatement stmnt = conn.prepareStatement(VOTERINFOQUERY);
-			stmnt.setString(1, voterId);
+			stmnt.setString(1, this.getHash(conn, "0", voterId));
 
 			
 			ResultSet result = stmnt.executeQuery();
@@ -70,8 +69,6 @@ public class DatabaseAccess {
 		}
 		
 	}
-
-	
 	
 	/**
 	 * @name getTally(Connection conn)
@@ -98,17 +95,14 @@ public class DatabaseAccess {
 			//Get votes 
 			ResultSet votes = voteStmnt.executeQuery();
 			//Tally votes into hashtable
-			int Count0 = 0;
 			int Count1 = 0;
 			int Count2 = 0;
 			int Count3 = 0;
+			int Count4 = 0;
+			int Count5 = 0; 
 			while(votes.next()){
 				
 				switch (votes.getString("candidateId")){
-				case "0":
-					result.put(votes.getString("candidateId"), Count0 + 1);
-					Count0++; 
-					break; 
 				case "1":
 					result.put(votes.getString("candidateId"), Count1 + 1);
 					Count1++; 
@@ -121,6 +115,15 @@ public class DatabaseAccess {
 					result.put(votes.getString("candidateId"), Count3 + 1);
 					Count3++; 
 					break; 
+				case "4":
+					result.put(votes.getString("candidateId"), Count4 + 1);
+					Count4++; 
+					break; 
+				case "5":
+					result.put(votes.getString("candidateId"), Count5 + 1);
+					Count5++; 
+					break;
+					
 				}
 				
 			}
@@ -144,7 +147,7 @@ public class DatabaseAccess {
 		try{
 			boolean rtn = false; 			
 			//Check if voter has already cast vote 
-			int voterStatus = this.validateUser(conn, voterId, "V"); 
+			int voterStatus = this.validateUser(conn, voterId, "0"); 
 			
 			if(voterStatus == 1){//Voter is found to have voted already
 				rtn = false; 
@@ -160,7 +163,7 @@ public class DatabaseAccess {
 				String hasVotedQuery = "UPDATE voters SET hasVoted = 1 WHERE voterId = ?";
 				
 				PreparedStatement hasVotedStmnt = conn.prepareStatement(hasVotedQuery); 
-				hasVotedStmnt.setString(1, voterId);
+				hasVotedStmnt.setString(1, this.getHash(conn, "0", voterId));
 				
 				//Post votes
 				int postVoteStatus = postVoteStmnt.executeUpdate();
@@ -180,7 +183,6 @@ public class DatabaseAccess {
 		
 	}
 
-	
 	/**
 	 * 
 	 * @name: validateUser(Connection conn, Int userId)
@@ -196,16 +198,23 @@ public class DatabaseAccess {
 			try {
 				String officialQuery = "SELECT * FROM pollingOfficial WHERE pollingOfficial.id = ? "; 
 				
-				PreparedStatement stmnt = conn.prepareStatement(officialQuery);
-				stmnt.setString(1, userId);
 				
-				
-				ResultSet result = stmnt.executeQuery(); 
-				if(result.next()){
-					rtn = 0; 
+				if(!this.getHash(conn, userType, userId).equalsIgnoreCase("NOTFOUND")){
+					
+					System.out.println("I reached here!");
+					
+					PreparedStatement stmnt = conn.prepareStatement(officialQuery);
+					userId = this.getHash(conn, userType, userId); 
+					
+					stmnt.setString(1, userId);
+					
+					ResultSet result = stmnt.executeQuery(); 
+					if(result.next()){
+						rtn = 0; 
+					}
+					
+					result.close();	
 				}
-				
-				result.close();	
 				
 			}catch (SQLException e){
 				System.out.println(e.getMessage());
@@ -216,32 +225,94 @@ public class DatabaseAccess {
 		
 		else if (userType == "0" ){//User is a voter
 			try{
-				String query = "SELECT * FROM voters WHERE voters.voterId = ?";
-				
-				PreparedStatement stmnt = conn.prepareStatement(query); 
-				stmnt.setString(1, userId.toString());
-				ResultSet result = stmnt.executeQuery();
-				
-				if (result.next()){
-					if (result.getString("hasVoted").equalsIgnoreCase("1")){
-						rtn = 1; 
+				if (!this.getHash(conn, userType, userId).equalsIgnoreCase("NOTFOUND")){
+					userId = this.getHash(conn, userType, userId); 
+					
+					String voterQuery = "SELECT * FROM voters WHERE voters.voterId = ?";
+					
+					PreparedStatement stmnt = conn.prepareStatement(voterQuery); 
+					stmnt.setString(1, userId);
+					ResultSet result = stmnt.executeQuery();
+					
+					if (result.next()){
+						if (result.getString("hasVoted").equalsIgnoreCase("1")){
+							rtn = 1; 
+						}
+						else {
+							rtn = 0; 
+						}
 					}
-					else {
-						rtn = 0; 
+					else{
+						rtn = 2; 
 					}
+					result.close();
 				}
-				else{
-					rtn = 2; 
-				}
-				return rtn; 
-				
+								
 			}catch(SQLException e){
 				System.out.println(e.getMessage());
 				rtn = 2;
 				return rtn; 
 			}
 		}
-		else return 2; 
+		
+		return rtn;  
+	}
+	
+	private String getHash(Connection conn, String userType, String userId){
+		final String allVoters = "SELECT * FROM voters;"; 
+		final String allOfficials = "SELECT * FROM pollingOfficial;";
+		final String  INVALIDUSER = "NOTFOUND"; 
+		final Hashing hasher = new Hashing(); 
+		
+		String rtn = INVALIDUSER;
+		String salt = ""; 
+		String hash = ""; 
+
+		try{
+			if (userType.equalsIgnoreCase("0")){
+				PreparedStatement allVotersStmnt = conn.prepareStatement(allVoters);
+				ResultSet allVotersResults = allVotersStmnt.executeQuery(); 
+				
+				while (allVotersResults.next()){
+					salt = allVotersResults.getString("salt");
+					hash = hasher.hash(userId + salt);					
+					
+					
+					if(hash.equalsIgnoreCase(allVotersResults.getString("voterId"))){
+						allVotersResults.close();
+						rtn = hash; 
+					}
+					else if(allVotersResults.isLast()){
+						rtn = INVALIDUSER;
+					}
+				}
+			}
+			
+			else if(userType.equalsIgnoreCase("1")){
+				PreparedStatement allOfficialsStmnt = conn.prepareStatement(allOfficials);
+				ResultSet allOfficialsResults = allOfficialsStmnt.executeQuery(); 
+				
+				while (allOfficialsResults.next()){
+					salt = allOfficialsResults.getString("salt");
+					hash = hasher.hash(userId + salt);
+					
+					if(hash.equalsIgnoreCase(allOfficialsResults.getString("id"))){
+						allOfficialsResults.close();
+						rtn = hash; 
+					}
+					else if(allOfficialsResults.isLast()){
+						rtn = INVALIDUSER;
+					}
+				}
+				
+			}
+			
+			
+		}catch(Exception e){
+			System.out.println(e.getMessage());
+		}
+		
+		return rtn; 
 	}
 }
 
