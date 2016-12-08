@@ -48,8 +48,11 @@ public class PollingOfficial extends User {
 			case "4":
 				candidateName = "Jill Stein"; 
 				break;
+			
+			case "5":
+				candidateName = "None";
+				break;
 			}
-
 			rtn = rtn + candidateName +": ";
 			rtn = rtn + results.get(currentKey);
 

@@ -11,10 +11,9 @@ import java.util.Properties;
 public class Driver {
 
 	private static final int ALLOWEDSIGNINATTEMPTS = 3;
-
 	
-	protected int signInCounter = 0;
-	private int attemptsLeft = Driver.ALLOWEDSIGNINATTEMPTS;
+	protected int pollingOfficialSignInCounter = 0;
+	protected int voterSignInCounter = 0;
 	private DatabaseAccess db = new DatabaseAccess(); 
 	private Connection conn; 
 

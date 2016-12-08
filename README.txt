@@ -54,21 +54,16 @@ Useful Information for Testing
 
 - Polling Officials Ids
 	•	12345 (Hassam Solano)
-	•	678910 (Sarah Ford)
+	•	67890 (Sarah Ford)
 - Voters Ids
-	•	Have Already Voted:
+	•	NO voter has voted yet:
 	⁃	1600121301099 ; (Nicholas Mcintosh)
 	⁃	1604040301699 ; (Tana Yang)
 	⁃	1606061549799 ; (Garrison Perez)
-	•	Have NOT Yet Voted:
 	⁃	1655081038099 ; (Martina Merrill)
 	⁃	1623031865099 ; (Phyllis Cash)
 	⁃	1661051987899 ; (Pearl Larson)
-	⁃	**For more see SQL queries below**
-
-- SQL Queries (To be run on mySQLWorkbench)
-	•	Find all voters:
-	⁃	SELECT * FROM voters; 
+	** There are 100 voters but for the sake of space, we only include these ids for testing  
 
 - Clean-Up
 	•	Database connections are automatically terminated once the user submits their vote. If the program is terminated without
@@ -76,5 +71,22 @@ Useful Information for Testing
 	⁃	Connections can be manually terminated in mySQLWorkbench:
 	⁃	In mySQLWorkbench application menu: Server -> Client Connections
 
+ Test cases:
+ 	• Voter votes normally: Pick a voter from the list above and vote. You should be able to enter your id, and if you entered it correctly, you should see the name and 
+ 	birthday of the voter whose id you entered (corresponding to the data above). Click the "This is me" button and then you should see a ballot with the canidates 
+ 	for the 2016 election. Select your choice and submit it. You should be directed to a screen that shows you who you voted for and gives you the option to confirm or 
+ 	change your vote.  If you choose to change your vote, you will be redirected to the ballot and must re-select and re-submit your vote. You will then be asked once again
+ 	to confirm your vote. If you confirm your vote, you will be take to a screen and you will be shown who you voted for. You must then print your vote in order to reset
+ 	the machine to the waiting state.
+ 	• Voter has already voted: Pick the voter whom you used to test the normal vote once you have finished the use case for a normal vote and try to enter their id into the
+ 	sign in box. When you submit this id, you should then see a warning saying you already voted and your number of sign-in attempts will be decreased to two.
+ 	• Voter misenters id 3 times in a row: To test this, you can either enter a voter id who has already voted or a string of numbers which is not correlated to any voter.
+ 	After three attempts, there will be a noise emitted from the computer and the polling official will be prompted to enter their id in order to continue the voting process.
+ 	• Voter misenters their id and it matches to another voter: Pick another voter id correlating to a voter who has not voted. Pretend as if this is not the identity you expected
+ 	and choose the "This is NOT me" button after you are shown the voter information. The screen should be reset but the sign in attempts will have increased. 
+ 	• Polling Official Enters id: Pick a polling official id and enter it into the field and sign in. If it is correct, you should be immediately redirected
+ 	to an unofficial tally which you must print in order to exit the screen and set the system back to its waiting state. 
+ 	• Polling Official mistenters id 5 times: 
+ 	
 _End Useful Information for Testing_
 

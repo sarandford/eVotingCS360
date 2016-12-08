@@ -2,26 +2,24 @@ package eVoting;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.JRadioButton;
 import java.awt.FlowLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import java.awt.event.ActionListener;
-import java.awt.print.PrinterException;
-import java.awt.event.ActionEvent;
-
-import eVoting.Driver;
 import java.awt.Font;
 import java.awt.Toolkit;
-import javax.swing.JList;
-import javax.swing.SwingConstants;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.print.PrinterException;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.border.EmptyBorder;
+import javax.swing.Timer;
 
 public class mainScreen extends JFrame {
 
@@ -84,13 +82,12 @@ public class mainScreen extends JFrame {
 		rdbtnJillStein.setFont(new Font("Dialog", Font.PLAIN, 35));
 		buttonGroup.add(rdbtnJillStein);
 		rdbtnJillStein.setActionCommand("4");
-		
+
 		JRadioButton rdbtnNone = new JRadioButton("None of these");
 		rdbtnNone.setFont(new Font("Dialog", Font.PLAIN, 35));
 		buttonGroup.add(rdbtnNone);
 		rdbtnNone.setActionCommand("5");
-		
-		
+
 		JButton btnMakeSelection = new JButton("Make Selection");
 		btnMakeSelection.setFont(new Font("Dialog", Font.PLAIN, 35));
 		btnMakeSelection.addActionListener(new ActionListener() {
@@ -112,9 +109,9 @@ public class mainScreen extends JFrame {
 						createVoteConfirmScreen("Gary Johnson", selection, voterId);
 						break;
 					case "4":
-						createVoteConfirmScreen("Jill Stein", selection ,voterId);
+						createVoteConfirmScreen("Jill Stein", selection, voterId);
 						break;
-					
+
 					case "5":
 						createVoteConfirmScreen("None of these", selection, voterId);
 						break;
@@ -131,7 +128,7 @@ public class mainScreen extends JFrame {
 		body.add(rdbtnGaryJohnson);
 		body.add(rdbtnJillStein);
 		body.add(rdbtnNone);
-		body.add(btnMakeSelection);		
+		body.add(btnMakeSelection);
 	}
 
 	public void createPollingOfficialAlertedScreen() {
@@ -150,7 +147,8 @@ public class mainScreen extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				String result = pollingOfficialIdField.getText().trim();
 				if (driver.validate(result, "P") == 0) {
-					driver.signInCounter = 0;
+					driver.voterSignInCounter = 0;
+					driver.pollingOfficialSignInCounter = 0;
 					transitionScreens();
 					createSignInScreen();
 				} else {
@@ -178,37 +176,38 @@ public class mainScreen extends JFrame {
 
 				if (selection.equalsIgnoreCase("submit")) {
 
-					if( driver.postVote(candidateID, voterId)){
+					if (driver.postVote(candidateID, voterId)) {
 
 						transitionScreens();
-	
+
 						JTextPane confirmSubmission = new JTextPane();
-						confirmSubmission.setText("You voted for: " + candidateName +"\n");
+						confirmSubmission.setText("You voted for: " + candidateName + "\n");
 						confirmSubmission.setFont(new Font("Dialog", Font.PLAIN, 35));
 						JButton printAndExit = new JButton("Print and Exit Booth");
 						printAndExit.setFont(new Font("Dialog", Font.PLAIN, 35));
 						body.add(confirmSubmission);
 						body.add(printAndExit);
-						
+
 						printAndExit.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
 								try {
 									confirmSubmission.print();
 									transitionScreens();
-									driver.signInCounter = 0;
+									driver.voterSignInCounter = 0;
+									driver.pollingOfficialSignInCounter = 0;
 									createSignInScreen();
 								} catch (PrinterException printException) {
 									printException.printStackTrace();
 								}
 							}
 						});
-					}
-					else{
+					} else {
 						JTextPane error = new JTextPane();
-						error.setText("A database error has occurred. Please notify official. You may vote on paper as an alternative");
+						error.setText(
+								"A database error has occurred. Please notify official. You may vote on paper as an alternative");
 						body.add(error);
 					}
-					
+
 				} else if (selection.equalsIgnoreCase("change")) {
 					transitionScreens();
 					createVoterSelectionScreen(voterId);
@@ -265,9 +264,12 @@ public class mainScreen extends JFrame {
 				try {
 					results.print();
 					transitionScreens();
-					driver.signInCounter = 0;// the voter count should not have
-												// changed but we reset it to
-												// ensure it is 0 again
+					driver.voterSignInCounter = 0;// the voter count should not
+													// have
+													// changed but we reset it
+													// to
+													// ensure it is 0 again
+					driver.pollingOfficialSignInCounter = 0;
 					createSignInScreen();
 				} catch (PrinterException printException) {
 					// TODO Auto-generated catch block
@@ -277,18 +279,36 @@ public class mainScreen extends JFrame {
 		});
 	}
 
+	public void alertToImpendingLockOut(){
+		JOptionPane.showMessageDialog(contentPane, "You have entered your id incorrectly too many times and we suspect an attempted security breach\nThe system will shut down when you confirm or exit this pop up.");
+		System.exit(0);
+	}
 	public void createSignInScreen() {
 		titleLabel.setText("Welcome to the eVoting System for the State of South Carolina");
 		title.add(titleLabel);
 		ButtonGroup roleRadioButtons = new ButtonGroup();
 		JRadioButton voterRadioButton = new JRadioButton("I am a voter");
+		JRadioButton pollingOfficialRadioButton = new JRadioButton("I am a polling official");
+		JLabel signInAttempts = new JLabel("Voter sign in attempts(3 Allowed): " + driver.voterSignInCounter);
 		voterRadioButton.setSelected(true);
 		voterRadioButton.setFont(new Font("Dialog", Font.PLAIN, 35));
-		JRadioButton pollingOfficialRadioButton = new JRadioButton("I am a polling official");
+		signInAttempts.setFont(new Font("Dialog", Font.PLAIN, 35));
+		pollingOfficialRadioButton.setActionCommand("change");
+		pollingOfficialRadioButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				signInAttempts.setText(
+						"Polling official sign in attempts(5 Allowed): " + driver.pollingOfficialSignInCounter);
+			}
+		});
+		voterRadioButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				signInAttempts.setText("Voter sign in attempts(3 Allowed): " + driver.voterSignInCounter);
+			}
+		});
 		pollingOfficialRadioButton.setFont(new Font("Dialog", Font.PLAIN, 35));
 		roleRadioButtons.add(voterRadioButton);
 		roleRadioButtons.add(pollingOfficialRadioButton);
-	
+
 		body.add(voterRadioButton);
 		body.add(pollingOfficialRadioButton);
 
@@ -301,87 +321,99 @@ public class mainScreen extends JFrame {
 		signInButtonforVoterAndPollingOfficial.setFont(new Font("Dialog", Font.PLAIN, 35));
 		JTextPane returnText = new JTextPane();
 		returnText.setFont(new Font("Dialog", Font.PLAIN, 35));
-		JLabel voterSignInAttempts = new JLabel(
-				"Voter Sign In Attempts(No more than 3 allowed): " + driver.signInCounter);
-		voterSignInAttempts.setFont(new Font("Dialog", Font.PLAIN, 35));
-		body.add(voterSignInAttempts);
+
+		body.add(signInAttempts);
 
 		signInButtonforVoterAndPollingOfficial.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String id = idTextField.getText().trim();
 				if (voterRadioButton.isSelected()) {
-					driver.signInCounter++;
-					voterSignInAttempts
-							.setText("Voter Sign In Attempts(No more than 3 allowed): " + driver.signInCounter);
-					if (driver.signInCounter <= 3) {
-						if (id.length() == 13) {
-							int result = driver.validate(id, "V");
-							if (result == 1) {// voter has voted
-								returnText.setText("ERROR: This id is associated with a voter who has already voted.");
-								idTextField.setText("");
-							} else if (result == 2) {
-								returnText.setText("ERROR: This ID does not match that of a valid voter");
-								idTextField.setText("");
-							} else if (result == 0) {// voter has not voted and
-														// is valid
-								returnText.setText(driver.getVoterInfo(id));
-								JButton voterVerifiedInformation = new JButton("This is me");
-								voterVerifiedInformation.setFont(new Font("Dialog", Font.PLAIN, 35));
-								JButton voterFailstoVerifyInformation = new JButton("This is NOT me");
-								voterFailstoVerifyInformation.setFont(new Font("Dialog", Font.PLAIN, 35));
-								body.add(voterVerifiedInformation);
-								body.add(voterFailstoVerifyInformation);
-								
-								voterVerifiedInformation.addActionListener(new ActionListener() {
-									public void actionPerformed(ActionEvent e) {
-										transitionScreens();
-										createVoterSelectionScreen(id);
-										}
-									}
-									);
-								voterFailstoVerifyInformation.addActionListener(new ActionListener() {
-									public void actionPerformed(ActionEvent e) {
-											transitionScreens();
-											if(driver.signInCounter==3){
-												createPollingOfficialAlertedScreen();
-											}
-											else{
-												createSignInScreen();
-											}
-										}
-									}
-									);
-								
-							}
-						} else {
-							returnText.setText("ERROR: Invalid id format");
+					driver.voterSignInCounter++;
+					signInAttempts
+							.setText("Voter Sign In Attempts(No more than 3 allowed): " + driver.voterSignInCounter);
+
+					if (id.length() == 13) {
+						int result = driver.validate(id, "V");
+						if (result == 1) {// voter has voted
+							returnText.setText("ERROR: This id is associated with a voter who has already voted.");
 							idTextField.setText("");
+						} else if (result == 2) {
+							returnText.setText("ERROR: This ID does not match that of a valid voter");
+							idTextField.setText("");
+						} else if (result == 0) {// voter has not voted and
+													// is valid
+							returnText.setText(driver.getVoterInfo(id));
+							JButton voterVerifiedInformation = new JButton("This is me");
+							voterVerifiedInformation.setFont(new Font("Dialog", Font.PLAIN, 35));
+							JButton voterFailstoVerifyInformation = new JButton("This is NOT me");
+							voterFailstoVerifyInformation.setFont(new Font("Dialog", Font.PLAIN, 35));
+							body.add(voterVerifiedInformation);
+							body.add(voterFailstoVerifyInformation);
+
+							voterVerifiedInformation.addActionListener(new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									transitionScreens();
+									createVoterSelectionScreen(id);
+								}
+							});
+							voterFailstoVerifyInformation.addActionListener(new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									transitionScreens();
+									if (driver.voterSignInCounter == 3) {
+										Toolkit.getDefaultToolkit().beep(); // found
+																			// from
+										// http://stackoverflow.com/questions/10771441/java-equivalent-of-c-sharp-system-beep
+										transitionScreens();
+										createPollingOfficialAlertedScreen();
+									} else {
+										createSignInScreen();
+									}
+								}
+							});
+
 						}
 					} else {
-						Toolkit.getDefaultToolkit().beep(); // found
-												// from
-						// http://stackoverflow.com/questions/10771441/java-equivalent-of-c-sharp-system-beep
-						transitionScreens();
-						createPollingOfficialAlertedScreen();
-
+						returnText.setText("ERROR: This ID does not match that of a valid voter");
+						idTextField.setText("");
+						if (driver.voterSignInCounter == 3) {
+							Toolkit.getDefaultToolkit().beep(); // found
+							transitionScreens();
+							createPollingOfficialAlertedScreen();
+						}
 					}
+
 				} else if (pollingOfficialRadioButton.isSelected()) {
+					driver.pollingOfficialSignInCounter++;
 					if (id.length() == 5) {
 						int result = driver.validate(id, "P");
 						if (result == 0) {
 							if (result == 0) {
-								System.out.println("VALID POLLING OFFICIAL");
 								transitionScreens();
 								createPollingOfficialScreen();
 							} else {
 								System.out.println("INVALID");
 								returnText.setText("This id does not match that of a valid polling official");
+								signInAttempts.setText("Polling official sign in attempts(5 Allowed): "
+										+ driver.pollingOfficialSignInCounter);
+								if(driver.pollingOfficialSignInCounter == 5){
+									alertToImpendingLockOut();
+								}
 							}
 						} else {
-							returnText.setText("ERROR: Invalid ID format. Please try again");
+							returnText.setText("This id does not match that of a valid polling official");
 						}
 						idTextField.setText("");
+					} else {
+						returnText.setText("This id does not match that of a valid polling official");
+						idTextField.setText("");
+						signInAttempts.setText(
+								"Polling official sign in attempts(5 Allowed): " + driver.pollingOfficialSignInCounter);
+						if(driver.pollingOfficialSignInCounter == 5){
+							alertToImpendingLockOut();
+						}
+
 					}
+
 				}
 
 			}
