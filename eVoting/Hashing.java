@@ -2,7 +2,6 @@ package eVoting;
 
 import java.security.MessageDigest;
 import java.util.Base64;
-import java.util.Base64.Encoder;
 
 
 public class Hashing {
