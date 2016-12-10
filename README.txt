@@ -1,4 +1,4 @@
-eVoting (Command Line Edition)
+eVoting
 By: Sarah Ford & Hassam Solano 
 
 **Any file paths described within are rooted in the directory of this README**
@@ -23,20 +23,18 @@ connection and you should now see the new schema. eVoting system will work even 
 	•	Using Eclipse:
 	⁃	Open Eclipse and select a workspace
 	⁃	In the Eclipse system menu press: File -> Import 
-	⁃	In the "General" folder select: Projects from Folder or Archive
-	⁃	In the "Import Source" text box enter the file path to "eVotingSystem.tar.gz" (File Path: /eVotingSystem.tar.gz)
-	⁃	Alternatively you can press the "Archive" button and search for "eVotingSystem.tar.gz" using your system's file explorer. 
-	⁃	Uncheck "eVotingSystem.tar.gz_expanded"
-	⁃	Leave second option (Has "Eclipse Project" under Import As column) checked.
+	⁃	In the "General" folder select: Existing Projects into Workspace
+	⁃	Choose: Select Archive File and press the browse button to find the included “EclipseProject.zip” file
+	⁃	Make sure “eVoting” is checked in the projects window. 
 	⁃	Press Finish
 
 	•	Not Using Eclipse: 
-	⁃	Extract "eVotingSystem.tar.gz" (File Path: /eVotingSystem.tar.gz)
+	⁃	Extract "EclipseProject.zip" (File Path: /EclipseProject.zip)
 	⁃	Import the "src" folder found in the extracted folder into your favorite IDE 
 	⁃	IMPORTANT: Import entire "src" folder as is to maintain package structure 
 
-	•	Open Driver.java (File Path: /eVoting/src/eVoting )
-	•	Scroll to line 24 (Beginning of constructor method)
+	•	Open “Driver.java” (File Path: /eVoting/src/eVoting )
+	•	Scroll to line 22 (Beginning of constructor method)
 	•	Enter/change user, password, serverName and port to match the information of your database connection.
 	⁃	**DO NOT CHANGE THE 'dbname' VARIABLE**
 
@@ -44,8 +42,8 @@ _End Set-up_
 
 Running eVoting System
 
-- Open 'Driver.java' (File Path: /eVoting/src/eVoting/Driver.java) in your favorite Java IDE (Eclipse is recommended)
-- Run 'Driver.java' file 
+- Open ‘mainScreen.java’ (File Path: /eVoting/src/eVoting/mainScreen.java) in your favorite Java IDE (Eclipse is recommended)
+- Run ‘mainScreen.java’ file 
 - Follow prompts to interact with the eVoting system 
 
 _End Running eVoting System_
@@ -82,13 +80,13 @@ Useful Information for Testing
  	sign in box. When you submit this id, you should then see a warning saying you already voted and your number of sign-in attempts will be decreased to two.
  	• Voter misenters id 3 times in a row: To test this, you can either enter a voter id who has already voted or a string of numbers which is not correlated to any voter.
  	After three attempts, there will be a noise emitted from the computer and the polling official will be prompted to enter their id in order to continue the voting process.
- 	• Voter misenters their id and it matchexws to another voter: Pick another voter id correlating to a voter who has not voted. Pretend as if this is not the identity you expected
+ 	• Voter misenters their id and it matches to another voter: Pick another voter id correlating to a voter who has not voted. Pretend as if this is not the identity you expected
  	and choose the "This is NOT me" button after you are shown the voter information. The screen should be reset but the sign in attempts will have increased. 
  	• Polling Official Enters id: Pick a polling official id and enter it into the field and sign in. If it is correct, you should be immediately redirected
  	to an unofficial tally which you must print in order to exit the screen and set the system back to its waiting state. 
  	• Polling Official mistenters id 5 times: If you attempt to enter a polling official id incorrectly 5 times, the fifth incorrect attempt will render
  	a pop up warning saying the system will close because of an attempted security breach. If you click the 'x' button or 'ok' the system will exit.
- 	You will notice, there is nothig you can do to prevent the system from shutting down at this point making it very secure. 
+ 	You will notice, there is nothing you can do to prevent the system from shutting down at this point making it very secure. 
  	
 _End Useful Information for Testing_
 
