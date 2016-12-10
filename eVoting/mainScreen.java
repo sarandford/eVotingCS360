@@ -159,7 +159,6 @@ public class mainScreen extends JFrame {
 		});
 		body.add(signInFailure);
 
-		// TODO add print method
 	}
 
 	public void createVoteConfirmScreen(String candidateName, String candidateID, String voterId) {
@@ -363,7 +362,7 @@ public class mainScreen extends JFrame {
 										Toolkit.getDefaultToolkit().beep(); // found
 																			// from
 										// http://stackoverflow.com/questions/10771441/java-equivalent-of-c-sharp-system-beep
-										transitionScreens();
+//										transitionScreens();
 										createPollingOfficialAlertedScreen();
 									} else {
 										createSignInScreen();
